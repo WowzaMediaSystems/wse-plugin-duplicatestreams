@@ -1,6 +1,6 @@
-# ModuleDuplicateStreams
+# DuplicateStreams
 
-ModuleDuplicateStreams is a module for [Wowza Streaming Engine™ media server software](https://www.wowza.com/products/streaming-engine) that allows a stream to be duplicated from one application instance to another instance on the same Wowza media server.
+DuplicateStreams is a module for [Wowza Streaming Engine™ media server software](https://www.wowza.com/products/streaming-engine) that allows a stream to be duplicated from one application instance to another instance on the same Wowza media server.
 
 ## Prerequisites
 
