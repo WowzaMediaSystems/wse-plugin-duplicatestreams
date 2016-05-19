@@ -1,4 +1,4 @@
-# ModuleDuplicateStreams
+# DuplicateStreams
 The **ModuleDuplicateStreams** module for [Wowza Streaming Engine™ media server software](https://www.wowza.com/products/streaming-engine) enables you to duplicate a stream from one application instance to another instance on the same Wowza media server.
 
 ## Prerequisites
@@ -16,7 +16,7 @@ You should use this module, instead of the Push Publishing feature, because it w
 
 Wowza Media Systems™ provides developers with a platform to create streaming applications and solutions. See [Wowza Developer Tools](https://www.wowza.com/resources/developers) to learn more about our APIs and SDK.
 
-To use the compiled version of this module, see [How to duplicate streams to another application instance (ModuleDuplicateStreams)](https://www.wowza.com/forums/content.php?613-How-to-duplicate-streams-to-another-application-instance-%28ModuleDuplicateStreams%29).
+To use the compiled version of this module, see [How to duplicate streams to another application instance (DuplicateStreams)](https://www.wowza.com/forums/content.php?613-How-to-duplicate-streams-to-another-application-instance-%28ModuleDuplicateStreams%29).
 
 ## Contact
 [Wowza Media Systems, LLC](https://www.wowza.com/contact)
