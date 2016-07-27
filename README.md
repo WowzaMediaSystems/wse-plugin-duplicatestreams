@@ -23,3 +23,5 @@ To use the compiled version of this module, see [How to duplicate streams to ano
 
 ## License
 This code is distributed under the [Wowza Public License](https://github.com/WowzaMediaSystems/wse-plugin-duplicatestreams/blob/master/LICENSE.txt).
+
+![alt tag](http://wowzalogs.com/stats/githubimage.php?plugin=wse-plugin-duplicatestreams)
