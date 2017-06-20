@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.wowza.util.StringUtils;
+import com.wowza.util.SystemUtils;
 import com.wowza.wms.amf.AMFPacket;
 import com.wowza.wms.application.*;
 import com.wowza.wms.logging.WMSLogger;
@@ -256,13 +257,20 @@ public class ModuleDuplicateStreams extends ModuleBase
 
 	public void onAppCreate(IApplicationInstance appInstance)
 	{
+		Map<String, String> envMap = new HashMap<String, String>();
+		
+		envMap.put("com.wowza.wms.context.VHost", appInstance.getVHost().getName());
+		envMap.put("com.wowza.wms.context.Application", appInstance.getApplication().getName());
+		envMap.put("com.wowza.wms.context.ApplicationInstance", appInstance.getName());
+				
 		this.appInstance = appInstance;
 		this.logger = WMSLoggerFactory.getLoggerObj(appInstance);
 		WMSProperties props = appInstance.getProperties();
-		this.streamNames = props.getPropertyStr(PROP_NAME_PREFIX + "StreamNames", this.streamNames);
-		this.targetVHostName = props.getPropertyStr(PROP_NAME_PREFIX + "TargetVHostName", this.targetVHostName);
-		this.targetAppName = props.getPropertyStr(PROP_NAME_PREFIX + "TargetAppName", this.targetAppName);
-		this.streamNameSuffix = props.getPropertyStr(PROP_NAME_PREFIX + "StreamNameSuffix", this.streamNameSuffix);
+		this.streamNames = SystemUtils.expandEnvironmentVariables(props.getPropertyStr(PROP_NAME_PREFIX + "StreamNames", this.streamNames), envMap);
+		this.targetVHostName = SystemUtils.expandEnvironmentVariables(props.getPropertyStr(PROP_NAME_PREFIX + "TargetVHostName", this.targetVHostName), envMap);
+		this.targetAppName = SystemUtils.expandEnvironmentVariables(props.getPropertyStr(PROP_NAME_PREFIX + "TargetAppName", this.targetAppName), envMap);
+		
+		this.streamNameSuffix = SystemUtils.expandEnvironmentVariables(props.getPropertyStr(PROP_NAME_PREFIX + "StreamNameSuffix", this.streamNameSuffix), envMap);
 		
 		logger.info(MODULE_NAME + ".onAppCreate [" + appInstance.getContextStr() + ", streamNames: " + streamNames + ", targetVHost: " + targetVHostName + ", targetAppName: " + targetAppName + ", streamNameSuffix: " + streamNameSuffix + "]", WMSLoggerIDs.CAT_application, WMSLoggerIDs.EVT_comment);
 	}
