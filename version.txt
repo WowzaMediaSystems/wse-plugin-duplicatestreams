@@ -1,0 +1,13 @@
+Build 11
+	* Added properties to allow publishers to be restarted if something happens on the target application.
+		`duplicateStreamsDoRestarts` default: true
+		`duplicateStreamsRestartTimeout` default: 10000 (10 seconds)
+		
+Build 9
+	* Added support for environment vars as defined in Application.xml
+
+Build 7
+	* Updated package path
+	
+Build 1
+	* Initial commit

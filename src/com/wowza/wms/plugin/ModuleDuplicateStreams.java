@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import com.wowza.util.StringUtils;
 import com.wowza.util.SystemUtils;
@@ -43,6 +45,10 @@ public class ModuleDuplicateStreams extends ModuleBase
 							logger.warn(MODULE_NAME + ".onLivePacket stream name missing for too long.  Cannot publish stream.",  stream, WMSLoggerIDs.CAT_application, WMSLoggerIDs.EVT_comment, WMSLoggerIDs.STAT_publish_internal_error, null);
 							delayedPackets.remove(stream);
 							stream.removeLivePacketListener(this);
+							if(doRestarts)
+							{
+								doRestart(streamName);
+							}
 							return;
 						}
 						flushDelayedPackets(stream);
@@ -92,6 +98,10 @@ public class ModuleDuplicateStreams extends ModuleBase
 						publisher.close();
 						stream.removeLivePacketListener(this);
 						logger.warn(MODULE_NAME + ".onLivePacket target stream already exists.  Cannot publish stream [source: " + streamName + ", target: " + streamName + streamNameSuffix + "]",  stream, WMSLoggerIDs.CAT_application, WMSLoggerIDs.EVT_comment, WMSLoggerIDs.STAT_publish_internal_error, null);
+						if(doRestarts)
+						{
+							doRestart(streamName);
+						}
 						return;
 					}
 					
@@ -229,11 +239,34 @@ public class ModuleDuplicateStreams extends ModuleBase
 							publisher.close();
 							stream.getProperties().remove(PROP_NAME_PREFIX + "Publisher");
 							stream.removeLivePacketListener(sourcePacketListener);
+							if(doRestarts)
+							{
+								doRestart(streamName);
+							}
 						}
 					}
 				}
 			}
 		}
+	}
+	
+	class RestartTask extends TimerTask
+	{
+		private final String streamName;
+
+		RestartTask(String streamName)
+		{
+			this.streamName = streamName;
+		}
+
+		@Override
+		public void run()
+		{
+			IMediaStream stream = appInstance.getStreams().getStream(streamName);
+			if(stream != null)
+				stream.addLivePacketListener(sourcePacketListener);
+		}
+		
 	}
 	
 	public static final String MODULE_NAME = "ModuleDuplicateStreams";
@@ -252,6 +285,9 @@ public class ModuleDuplicateStreams extends ModuleBase
 	private SourceStreamNotify sourceStreamNotify = new SourceStreamNotify();
 	private TargetAppInstanceNotify targetAppInstanceNotify = new TargetAppInstanceNotify();
 	private Map<IMediaStream, List<AMFPacket>> delayedPackets = new HashMap<IMediaStream, List<AMFPacket>>();
+	private long restartTimeout = 10000l;
+	private boolean doRestarts = true;
+	
 	
 	private Object lock = new Object();
 
@@ -269,10 +305,12 @@ public class ModuleDuplicateStreams extends ModuleBase
 		this.streamNames = SystemUtils.expandEnvironmentVariables(props.getPropertyStr(PROP_NAME_PREFIX + "StreamNames", this.streamNames), envMap);
 		this.targetVHostName = SystemUtils.expandEnvironmentVariables(props.getPropertyStr(PROP_NAME_PREFIX + "TargetVHostName", this.targetVHostName), envMap);
 		this.targetAppName = SystemUtils.expandEnvironmentVariables(props.getPropertyStr(PROP_NAME_PREFIX + "TargetAppName", this.targetAppName), envMap);
+		this.doRestarts = props.getPropertyBoolean(PROP_NAME_PREFIX + "DoRestarts", this.doRestarts);
+		this.restartTimeout = props.getPropertyLong(PROP_NAME_PREFIX + "RestartTimeout", this.restartTimeout);
 		
 		this.streamNameSuffix = SystemUtils.expandEnvironmentVariables(props.getPropertyStr(PROP_NAME_PREFIX + "StreamNameSuffix", this.streamNameSuffix), envMap);
 		
-		logger.info(MODULE_NAME + ".onAppCreate [" + appInstance.getContextStr() + ", streamNames: " + streamNames + ", targetVHost: " + targetVHostName + ", targetAppName: " + targetAppName + ", streamNameSuffix: " + streamNameSuffix + "]", WMSLoggerIDs.CAT_application, WMSLoggerIDs.EVT_comment);
+		logger.info(MODULE_NAME + ".onAppCreate [" + appInstance.getContextStr() + ", Build #11, streamNames: " + streamNames + ", targetVHost: " + targetVHostName + ", targetAppName: " + targetAppName + ", streamNameSuffix: " + streamNameSuffix + "]", WMSLoggerIDs.CAT_application, WMSLoggerIDs.EVT_comment);
 	}
 
 	public void onAppStop(IApplicationInstance appInstance)
@@ -303,5 +341,11 @@ public class ModuleDuplicateStreams extends ModuleBase
 			stream.removeLivePacketListener(this.sourcePacketListener);
 			delayedPackets.remove(stream);
 		}
+	}
+
+	private void doRestart(String streamName)
+	{
+		Timer t = new Timer();
+		t.schedule(new RestartTask(streamName), restartTimeout);
 	}
 }
